@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financiero - Giunti Chile AG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Merriweather', serif;
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .alert-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 6px solid var(--warning);
+            padding: 1.5rem 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .alert-box strong {
+            color: #92400e;
+            font-weight: 700;
+        }
+
+        .alert-text {
+            color: #78350f;
+            margin-top: 0.5rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            animation: scaleIn 0.5s ease-out both;
+        }
+
+        .metric-card:nth-child(1) { animation-delay: 0.1s; }
+        .metric-card:nth-child(2) { animation-delay: 0.2s; }
+        .metric-card:nth-child(3) { animation-delay: 0.3s; }
+        .metric-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--secondary);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metric-change.positive {
+            color: var(--success);
+        }
+
+        .metric-change.negative {
+            color: var(--danger);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 2rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 0.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--bg-main);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-family: 'Merriweather', serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 1.75rem;
+            background: linear-gradient(180deg, var(--secondary) 0%, var(--primary) 100%);
+            border-radius: 2px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 2rem;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .comparison-table th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+
+        .comparison-table th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+        .comparison-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        .comparison-table tr:hover td {
+            background: var(--bg-main);
+        }
+
+        .comparison-table tr:last-child td:first-child {
+            border-radius: 0 0 0 12px;
+        }
+
+        .comparison-table tr:last-child td:last-child {
+            border-radius: 0 0 12px 0;
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .ifrs-note {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--warning);
+            margin-top: 1.5rem;
+        }
+
+        .ifrs-note strong {
+            color: #92400e;
+        }
+
+        .conclusions-section {
+            margin-top: 2rem;
+        }
+
+        .conclusion-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .conclusion-item:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateX(4px);
+        }
+
+        .conclusion-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .conclusion-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .conclusion-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            flex: 1;
+        }
+
+        .conclusion-text {
+            color: var(--text-muted);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-top: 1.5rem;
+            background: var(--bg-main);
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-box {
+            background: var(--bg-main);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+
+        .badge.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+
+            .tab {
+                width: 100%;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .conclusion-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dashboard Financiero 2024-2025</h1>
+            <p class="subtitle">GIUNTI CHILE AG · Análisis Ejecutivo con Indicadores Clave</p>
+        </header>
+
+        <div class="alert-box">
+            <strong>⚠ NOTA IMPORTANTE</strong>
+            <div class="alert-text">
+                En 2025 se implementó contabilidad bajo IFRS, generando un incremento de $236 millones en gastos. Adicionalmente, se registraron $126 millones en despidos extraordinarios (PL503), de los cuales $91 millones corresponden a 2 ejecutivos. Las cifras "Pre-IFRS" ajustan estos efectos para comparaciones homogéneas.
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Ventas Totales 2025</div>
+                <div class="metric-value">$2,871 M</div>
+                <div class="metric-change positive">↑ 5.7% vs 2024</div>
+                <div class="metric-change negative">↓ 12.3% vs Budget</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">EBITDA 2025</div>
+                <div class="metric-value">$463 M</div>
+                <div class="metric-change negative">↓ 24.5% vs 2024</div>
+                <div class="metric-change negative">↓ 41.9% vs Budget</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">EBITDA Pre-IFRS</div>
+                <div class="metric-value">$699 M</div>
+                <div class="metric-change positive">↑ 13.9% vs 2024</div>
+                <div class="metric-change">Margen 24.3%</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Utilidad Neta 2025</div>
+                <div class="metric-value">$16 M</div>
+                <div class="metric-change negative">↓ 94.8% vs 2024</div>
+                <div class="metric-change negative">↓ 97.1% vs Budget</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('budget')">Real vs Budget 2025</button>
+            <button class="tab" onclick="switchTab('year')">Real 2025 vs 2024</button>
+        </div>
+
+        <div id="budget-content" class="tab-content active">
+            <div class="section">
+                <h2 class="section-title">Comparativo Real 2025 vs Budget 2025</h2>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Real 2025</th>
+                            <th>Budget 2025</th>
+                            <th>Variación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Ventas Totales</strong></td>
+                            <td>$2,871 M</td>
+                            <td>$3,273 M</td>
+                            <td class="highlight">-$402 M (-12.3%)</td>
+                        </tr>
+                        <tr>
+                            <td>· Ventas de Productos</td>
+                            <td>$2,322 M</td>
+                            <td>$2,771 M</td>
+                            <td>-$449 M (-16.2%)</td>
+                        </tr>
+                        <tr>
+                            <td>· Ventas de Servicios</td>
+                            <td>$535 M</td>
+                            <td>$437 M</td>
+                            <td class="highlight">+$98 M (+22.3%)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>EBITDA</strong></td>
+                            <td>$463 M</td>
+                            <td>$797 M</td>
+                            <td class="highlight">-$334 M (-41.9%)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Margen EBITDA</strong></td>
+                            <td>16.1%</td>
+                            <td>24.4%</td>
+                            <td class="highlight">-8.3 pp</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="ifrs-note">
+                    <strong>Cifras Pre-IFRS (ajustado +$236M):</strong><br>
+                    EBITDA: $699 M (24.3%) · EBIT: $534 M · Utilidad Neta: $252 M (aún -54.8% vs Budget)
+                </div>
+            </div>
+
+            <div class="conclusions-section">
+                <!-- Conclusión 1 -->
+                <div class="conclusion-item">
+                    <div class="conclusion-header">
+                        <div class="conclusion-number">01</div>
+                        <div class="conclusion-title">Significativo Incumplimiento del Presupuesto</div>
+                    </div>
+                    <div class="conclusion-text">
+                        Las ventas alcanzaron $2,871 millones versus un presupuesto de $3,273 millones, representando un déficit del 12.3% ($402 millones). La utilidad neta fue de solo $16 millones versus $558 millones presupuestados, evidenciando una desviación del 97.1%. En cifras Pre-IFRS (ajustando $236 millones de cambio contable), la utilidad neta habría sido de $252 millones, aún 54.8% por debajo del presupuesto.
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Déficit en Ventas</div>
+                            <div class="stat-value">-$402M</div>
+                            <span class="badge danger">-12.3%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Déficit Utilidad Neta</div>
+                            <div class="stat-value">-$541M</div>
+                            <span class="badge danger">-97.1%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Utilidad Pre-IFRS</div>
+                            <div class="stat-value">$252M</div>
+                            <span class="badge warning">-54.8%</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart1"></canvas>
+                    </div>
+                </div>
+
+                <!-- Conclusión 2 -->
+                <div class="conclusion-item">
+                    <div class="conclusion-header">
+                        <div class="conclusion-number">02</div>
+                        <div class="conclusion-title">Deterioro en Márgenes Operacionales</div>
+                    </div>
+                    <div class="conclusion-text">
+                        El margen EBITDA se ubicó en 16.1% versus 24.4% presupuestado, una contracción de 8.3 puntos porcentuales. En términos absolutos, el EBITDA fue de $463 millones versus $797 millones presupuestados (-41.9%). Pre-IFRS, el EBITDA habría sido de $699 millones (margen 24.3%), prácticamente en línea con el presupuesto, lo que indica que el cambio contable impactó significativamente la comparabilidad.
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Margen EBITDA Real</div>
+                            <div class="stat-value">16.1%</div>
+                            <span class="badge danger">-8.3pp</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Margen Pre-IFRS</div>
+                            <div class="stat-value">24.3%</div>
+                            <span class="badge success">≈ Budget</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Impacto IFRS</div>
+                            <div class="stat-value">$236M</div>
+                            <span class="badge warning">Ajuste</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart2"></canvas>
+                    </div>
+                </div>
+
+                <!-- Conclusión 3 -->
+                <div class="conclusion-item">
+                    <div class="conclusion-header">
+                        <div class="conclusion-number">03</div>
+                        <div class="conclusion-title">Desempeño Mixto por Línea de Negocio</div>
+                    </div>
+                    <div class="conclusion-text">
+                        Las ventas de servicios superaron el presupuesto en 22.3% ($98 millones), compensando parcialmente la caída en ventas de productos que fueron 16.2% inferiores ($449 millones). Este cambio en el mix de negocio sugiere una reorientación estratégica hacia servicios, aunque insuficiente para compensar la pérdida en productos.
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Productos vs Budget</div>
+                            <div class="stat-value">-$449M</div>
+                            <span class="badge danger">-16.2%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Servicios vs Budget</div>
+                            <div class="stat-value">+$98M</div>
+                            <span class="badge success">+22.3%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Compensación Neta</div>
+                            <div class="stat-value">-$351M</div>
+                            <span class="badge warning">Parcial</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart3"></canvas>
+                    </div>
+                </div>
+
+                <!-- Conclusión 4 -->
+                <div class="conclusion-item">
+                    <div class="conclusion-header">
+                        <div class="conclusion-number">04</div>
+                        <div class="conclusion-title">Impacto Extraordinario de Reestructuración</div>
+                    </div>
+                    <div class="conclusion-text">
+                        Los gastos de personal fueron $106 millones inferiores al presupuesto, representando una eficiencia del 9.4%. Sin embargo, se registraron $126 millones en partidas no recurrentes (PL503) por despidos extraordinarios, de los cuales $91 millones corresponden a 2 ejecutivos. Excluyendo estos efectos no recurrentes ($126 millones) y el ajuste IFRS ($236 millones), la utilidad neta habría sido de $378 millones, todavía 32.2% por debajo del presupuesto.
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Ahorro Personal</div>
+                            <div class="stat-value">$106M</div>
+                            <span class="badge success">-9.4%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Despidos (PL503)</div>
+                            <div class="stat-value">$126M</div>
+                            <span class="badge warning">No Recur.</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Utilidad Ajustada</div>
+                            <div class="stat-value">$378M</div>
+                            <span class="badge warning">-32.2%</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart4"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="year-content" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Comparativo Real 2025 vs Real 2024</h2>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Real 2025</th>
+                            <th>Real 2024</th>
+                            <th>Variación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Ventas Totales</strong></td>
+                            <td>$2,871 M</td>
+                            <td>$2,716 M</td>
+                            <td class="highlight">+$155 M (+5.7%)</td>
+                        </tr>
+                        <tr>
+                            <td>· Ventas de Productos</td>
+                            <td>$2,322 M</td>
+                            <td>$2,294 M</td>
+                            <td>+$29 M (+1.3%)</td>
+                        </tr>
+                        <tr>
+                            <td>· Ventas de Servicios</td>
+                            <td>$535 M</td>
+                            <td>$344 M</td>
+                            <td class="highlight">+$190 M (+55.3%)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>EBITDA</strong></td>
+                            <td>$463 M</td>
+                            <td>$614 M</td>
+                            <td class="highlight">-$150 M (-24.5%)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Margen EBITDA</strong></td>
+                            <td>16.1%</td>
+                            <td>22.6%</td>
+                            <td class="highlight">-6.5 pp</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="ifrs-note">
+                    <strong>Cifras Pre-IFRS (ajustado +$236M + $126M despidos):</strong><br>
+                    EBITDA: $699 M (24.3%, +13.9% vs 2024) · Utilidad Neta: $378 M (+20.7% vs 2024)
+                </div>
+            </div>
+
+            <div class="conclusions-section">
+                <!-- Conclusión 1 YoY -->
+                <div class="conclusion-item">
+                    <div class="conclusion-header">
+                        <div class="conclusion-number">01</div>
+                        <div class="conclusion-title">Crecimiento Moderado con Cambio en Composición</div>
+                    </div>
+                    <div class="conclusion-text">
+                        Las ventas totales crecieron 5.7% ($155 millones), alcanzando $2,871 millones. Este crecimiento está impulsado principalmente por servicios, que aumentaron 55.3% ($190 millones), mientras que las ventas de productos crecieron solo 1.3% ($29 millones). Esta transformación del mix comercial refleja una exitosa diversificación hacia servicios de mayor margen.
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Crecimiento Total</div>
+                            <div class="stat-value">+$155M</div>
+                            <span class="badge success">+5.7%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Productos 2025 vs 2024</div>
+                            <div class="stat-value">+$29M</div>
+                            <span class="badge success">+1.3%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Servicios 2025 vs 2024</div>
+                            <div class="stat-value">+$190M</div>
+                            <span class="badge success">+55.3%</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart5"></canvas>
+                    </div>
+                </div>
+
+                <!-- Conclusión 2 YoY -->
+                <div class="conclusion-item">
+                    <div class="conclusion-header">
+                        <div class="conclusion-number">02</div>
+                        <div class="conclusion-title">Deterioro Dramático en Rentabilidad</div>
+                    </div>
+                    <div class="conclusion-text">
+                        A pesar del crecimiento en ventas, la utilidad neta se desplomó 94.8%, pasando de $313 millones en 2024 a solo $16 millones en 2025. El EBITDA cayó 24.5% ($150 millones), con el margen EBITDA contrayéndose de 22.6% a 16.1%. En cifras Pre-IFRS (ajustando el efecto contable de $236 millones), el EBITDA habría sido de $699 millones (margen 24.3%), representando un crecimiento real de 13.9%.
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Caída Utilidad Neta</div>
+                            <div class="stat-value">-$297M</div>
+                            <span class="badge danger">-94.8%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">EBITDA Pre-IFRS</div>
+                            <div class="stat-value">$699M</div>
+                            <span class="badge success">+13.9%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Margen Contracción</div>
+                            <div class="stat-value">-6.5pp</div>
+                            <span class="badge danger">22.6→16.1%</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart6"></canvas>
+                    </div>
+                </div>
+
+                <!-- Conclusión 3 YoY -->
+                <div class="conclusion-item">
+                    <div class="conclusion-header">
+                        <div class="conclusion-number">03</div>
+                        <div class="conclusion-title">Incremento Desproporcionado en Costos</div>
+                    </div>
+                    <div class="conclusion-text">
+                        Los gastos totales de producción aumentaron 37.6% ($280 millones), muy por encima del crecimiento en ventas del 5.7%. Los costos de servicios se duplicaron, aumentando 108.2% ($72 millones), en línea con el fuerte crecimiento de esta línea. Sin embargo, los gastos de productos aumentaron 30.5% ($208 millones) pese a que las ventas de productos solo crecieron 1.3%, revelando severa pérdida de eficiencia operacional.
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Aumento Costos Total</div>
+                            <div class="stat-value">+$280M</div>
+                            <span class="badge danger">+37.6%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Costos Productos</div>
+                            <div class="stat-value">+$208M</div>
+                            <span class="badge danger">+30.5%</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Costos Servicios</div>
+                            <div class="stat-value">+$72M</div>
+                            <span class="badge warning">+108.2%</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart7"></canvas>
+                    </div>
+                </div>
+
+                <!-- Conclusión 4 YoY -->
+                <div class="conclusion-item">
+                    <div class="conclusion-header">
+                        <div class="conclusion-number">04</div>
+                        <div class="conclusion-title">Eventos Extraordinarios con Impacto Material</div>
+                    </div>
+                    <div class="conclusion-text">
+                        La adopción de IFRS generó $236 millones de gastos adicionales y se registraron $126 millones en partidas no recurrentes (PL503) por despidos extraordinarios, de los cuales $91 millones corresponden a 2 ejecutivos (versus rangos normales de $30-60 millones anuales). D&A se quintuplicó de $34 millones a $165 millones. Excluyendo estos efectos ($362 millones en total), la utilidad neta habría sido de $378 millones, 20.7% superior a 2024 en cifras Pre-IFRS.
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Impacto IFRS</div>
+                            <div class="stat-value">$236M</div>
+                            <span class="badge warning">Contable</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Despidos (PL503)</div>
+                            <div class="stat-value">$126M</div>
+                            <span class="badge warning">Extraord.</span>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Utilidad Ajustada</div>
+                            <div class="stat-value">$378M</div>
+                            <span class="badge success">+20.7%</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart8"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración global de Chart.js
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.font.size = 12;
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (tab === 'budget') {
+                document.getElementById('budget-content').classList.add('active');
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                initBudgetCharts();
+            } else {
+                document.getElementById('year-content').classList.add('active');
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                initYearCharts();
+            }
+        }
+
+        // Gráficos para Budget vs Real
+        function initBudgetCharts() {
+            // Gráfico 1: Comparación Ventas y Utilidad
+            const ctx1 = document.getElementById('chart1');
+            if (ctx1.chart) ctx1.chart.destroy();
+            ctx1.chart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Ventas Totales', 'EBITDA', 'Utilidad Neta'],
+                    datasets: [{
+                        label: 'Budget 2025',
+                        data: [3273, 797, 558],
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Real 2025',
+                        data: [2871, 463, 16],
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Real 2025 Pre-IFRS',
+                        data: [2871, 699, 252],
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Real vs Budget 2025 (Millones CLP)', font: { size: 14, weight: 'bold' } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Gráfico 2: Márgenes EBITDA
+            const ctx2 = document.getElementById('chart2');
+            if (ctx2.chart) ctx2.chart.destroy();
+            ctx2.chart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Margen EBITDA', 'EBITDA Absoluto (M)'],
+                    datasets: [{
+                        label: 'Budget 2025',
+                        data: [24.4, 797],
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Real 2025',
+                        data: [16.1, 463],
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Real 2025 Pre-IFRS',
+                        data: [24.3, 699],
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Comparación EBITDA: Budget vs Real (con y sin IFRS)', font: { size: 14, weight: 'bold' } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Gráfico 3: Mix de Ventas
+            const ctx3 = document.getElementById('chart3');
+            if (ctx3.chart) ctx3.chart.destroy();
+            ctx3.chart = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: ['Productos', 'Servicios'],
+                    datasets: [{
+                        label: 'Budget 2025',
+                        data: [2771, 437],
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Real 2025',
+                        data: [2322, 535],
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Variación',
+                        data: [-449, 98],
+                        backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Mix de Ventas: Productos vs Servicios (Millones CLP)', font: { size: 14, weight: 'bold' } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Gráfico 4: Impactos Extraordinarios y Puente a Budget
+            const ctx4 = document.getElementById('chart4');
+            if (ctx4.chart) ctx4.chart.destroy();
+            ctx4.chart = new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: ['Budget 2025', 'Real 2025', 'Ajuste IFRS', 'Ajuste Despidos', 'Real Pre-IFRS', 'Gap Estructural'],
+                    datasets: [{
+                        label: 'Utilidad Neta (M)',
+                        data: [558, 16, 236, 126, 378, 180],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(245, 158, 11, 0.6)',
+                            'rgba(249, 115, 22, 0.6)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(100, 116, 139, 0.5)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Puente de Utilidad Neta: Real a Pre-IFRS (Millones CLP)', font: { size: 14, weight: 'bold' } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Gráficos para Año contra Año
+        function initYearCharts() {
+            // Gráfico 5: Evolución Ventas
+            const ctx5 = document.getElementById('chart5');
+            if (ctx5.chart) ctx5.chart.destroy();
+            ctx5.chart = new Chart(ctx5, {
+                type: 'bar',
+                data: {
+                    labels: ['Ventas Totales', 'Productos', 'Servicios'],
+                    datasets: [{
+                        label: '2024',
+                        data: [2716, 2294, 344],
+                        backgroundColor: 'rgba(100, 116, 139, 0.8)',
+                        borderColor: 'rgba(100, 116, 139, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: '2025',
+                        data: [2871, 2322, 535],
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Comparación Ventas 2024 vs 2025 (Millones CLP)', font: { size: 14, weight: 'bold' } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Gráfico 6: Rentabilidad
+            const ctx6 = document.getElementById('chart6');
+            if (ctx6.chart) ctx6.chart.destroy();
+            ctx6.chart = new Chart(ctx6, {
+                type: 'bar',
+                data: {
+                    labels: ['EBITDA', 'Margen EBITDA (%)', 'Utilidad Neta'],
+                    datasets: [{
+                        label: '2024',
+                        data: [614, 22.6, 313],
+                        backgroundColor: 'rgba(100, 116, 139, 0.8)',
+                        borderColor: 'rgba(100, 116, 139, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: '2025 Real',
+                        data: [463, 16.1, 16],
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: '2025 Pre-IFRS',
+                        data: [699, 24.3, 378],
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Evolución Rentabilidad 2024 vs 2025 (con y sin IFRS)', font: { size: 14, weight: 'bold' } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Gráfico 7: Costos
+            const ctx7 = document.getElementById('chart7');
+            if (ctx7.chart) ctx7.chart.destroy();
+            ctx7.chart = new Chart(ctx7, {
+                type: 'bar',
+                data: {
+                    labels: ['Costos Producción', 'Gastos Productos', 'Gastos Servicios'],
+                    datasets: [{
+                        label: '2024',
+                        data: [745, 679, 67],
+                        backgroundColor: 'rgba(100, 116, 139, 0.8)',
+                        borderColor: 'rgba(100, 116, 139, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: '2025',
+                        data: [1026, 886, 139],
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Evolución Costos 2024 vs 2025 (Millones CLP)', font: { size: 14, weight: 'bold' } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Gráfico 8: Eventos Extraordinarios
+            const ctx8 = document.getElementById('chart8');
+            if (ctx8.chart) ctx8.chart.destroy();
+            ctx8.chart = new Chart(ctx8, {
+                type: 'bar',
+                data: {
+                    labels: ['Utilidad Neta', 'D&A', 'Ajuste IFRS', 'Despidos PL503', 'Utilidad Ajustada'],
+                    datasets: [{
+                        label: '2024',
+                        data: [313, 34, 0, 0, 313],
+                        backgroundColor: 'rgba(100, 116, 139, 0.8)',
+                        borderColor: 'rgba(100, 116, 139, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: '2025',
+                        data: [16, 165, 236, 126, 378],
+                        backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Impacto Eventos Extraordinarios: 2024 vs 2025 (Millones CLP)', font: { size: 14, weight: 'bold' } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Inicializar gráficos al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            initBudgetCharts();
+        });
+    </script>
+</body>
+</html>
