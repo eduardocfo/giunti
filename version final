@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financiero - Giunti Chile AG</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-blue-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Datos financieros
+        const financialData = {
+            "real_2025": {
+                "PL101": 2322329127.0,
+                "PL102": 534529220.0,
+                "PL103": 868200.0,
+                "PL104": 0.0,
+                "PL105": 13587020.0,
+                "PL106": 0.0,
+                "PL201": -296190181.0,
+                "PL202": -139212654.0,
+                "PL203": -483795448.0,
+                "PL204": -106647976.0,
+                "PL301": -1018538637.0,
+                "PL306": -11284081.0,
+                "PL303": -317440511.0,
+                "PL304": -157322.0,
+                "PL305": -34700585.0,
+                "PL401": -151429410.0,
+                "PL402": -13633311.0,
+                "PL501": -10191131.0,
+                "PL502": 18857506.0,
+                "PL503": -125855102.0,
+                "PL6001": -164759955.0
+            },
+            "budget_2025": {
+                "PL101": 2771179861.3964944,
+                "PL102": 436926724.0,
+                "PL103": 0.0,
+                "PL104": 0.0,
+                "PL105": 65377342.643522575,
+                "PL106": 0.0,
+                "PL201": -265098636.56762254,
+                "PL202": -107431681.0,
+                "PL203": -555391917.536721,
+                "PL204": -134412408.61418948,
+                "PL301": -1124360202.0,
+                "PL306": 0,
+                "PL303": -250775043.0,
+                "PL304": 0,
+                "PL305": -38845615.05166114,
+                "PL401": -42000000.0,
+                "PL402": 0.0,
+                "PL501": 0,
+                "PL502": 0.0,
+                "PL503": 0.0,
+                "PL6001": -197426388.0
+            },
+            "real_2024": {
+                "PL101": 2293522585.0,
+                "PL102": 344254258.0,
+                "PL103": 0.0,
+                "PL104": 19976475.0,
+                "PL105": 58146702.0,
+                "PL106": 0.0,
+                "PL201": -217017806.0,
+                "PL202": -66857715.0,
+                "PL203": -461533365.0,
+                "PL204": 0.0,
+                "PL301": -987344324.0,
+                "PL306": 0.0,
+                "PL303": -336127962.0,
+                "PL304": -1186713.0,
+                "PL305": -32196390.0,
+                "PL401": 0,
+                "PL402": -34131132.0,
+                "PL501": -28375005.0,
+                "PL502": 0.0,
+                "PL503": 0.0,
+                "PL6001": -237764189.0
+            },
+            "totales": {
+                "production_value_2025": 2871313567.0,
+                "production_value_budget": 3273483928.040017,
+                "production_value_2024": 2715900020.0,
+                "production_cost_2025": -1025846259.0,
+                "production_cost_budget": -1062334643.718533,
+                "production_cost_2024": -745408886.0,
+                "sga_2025": -1382121136.0,
+                "sga_budget": -1413980860.0516613,
+                "sga_2024": -1356855389.0,
+                "da_2025": -165062721.0,
+                "da_budget": -42000000.0,
+                "da_2024": -34131132.0,
+                "financial_2025": -117188727.0,
+                "financial_budget": 0.0,
+                "financial_2024": -28375005.0,
+                "tax_2025": -164759955.0,
+                "tax_budget": -197426388.0,
+                "tax_2024": -237764189.0,
+                "utilidad_neta_2025": 16334769.0,
+                "utilidad_neta_budget": 557742036.2698228,
+                "utilidad_neta_2024": 313365419.0,
+                "ebitda_2025": 463346172.0,
+                "ebitda_budget": 797168424.2698228,
+                "ebitda_2024": 613635745.0,
+                "ebit_2025": 298283451.0,
+                "ebit_budget": 755168424.2698228,
+                "ebit_2024": 579504613.0
+            },
+            "pre_ifrs_2025": {
+                "utilidad_neta": 252334769.0,
+                "ebitda": 699346172.0,
+                "ebit": 534283451.0
+            },
+            "pre_ifrs_2024": {
+                "utilidad_neta": 313365419.0,
+                "ebitda": 613635745.0,
+                "ebit": 579504613.0
+            },
+            "ajustes": {
+                "ifrs": 236000000,
+                "despidos_total": 125000000,
+                "despidos_ejecutivos": 91000000,
+                "despidos_normales": 34000000
+            }
+        };
+
+        // Componente de Login
+        const Login = ({ onLogin }) => {
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState(false);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (password === 'es2026') {
+                    onLogin();
+                } else {
+                    setError(true);
+                    setTimeout(() => setError(false), 2000);
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100">
+                    <div className="bg-white p-10 rounded-2xl shadow-2xl w-96 border border-gray-100">
+                        <div className="text-center mb-8">
+                            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg">
+                                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </div>
+                            <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard Financiero</h1>
+                            <p className="text-gray-500 text-sm">Giunti Chile AG</p>
+                        </div>
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-6">
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Contraseña"
+                                    className={`w-full px-4 py-3 rounded-lg border ${error ? 'border-red-400 bg-red-50' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
+                                />
+                                {error && (
+                                    <p className="text-red-500 text-sm mt-2 flex items-center">
+                                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                        </svg>
+                                        Contraseña incorrecta
+                                    </p>
+                                )}
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                            >
+                                Ingresar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        // Componente de Gráfico
+        const ChartComponent = ({ type, data, options, id }) => {
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
+
+            useEffect(() => {
+                if (chartRef.current) {
+                    const ctx = chartRef.current.getContext('2d');
+                    
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+
+                    chartInstance.current = new Chart(ctx, {
+                        type: type,
+                        data: data,
+                        options: {
+                            ...options,
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                ...options.plugins,
+                                legend: {
+                                    ...options.plugins?.legend,
+                                    labels: {
+                                        ...options.plugins?.legend?.labels,
+                                        font: {
+                                            size: 11
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                return () => {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                };
+            }, [type, data, options]);
+
+            return <canvas ref={chartRef} id={id}></canvas>;
+        };
+
+        // Función para formatear números
+        const formatNumber = (num) => {
+            return new Intl.NumberFormat('es-CL', {
+                style: 'currency',
+                currency: 'CLP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(num);
+        };
+
+        const formatPercent = (num) => {
+            return `${(num * 100).toFixed(1)}%`;
+        };
+
+        // Dashboard Principal
+        const Dashboard = () => {
+            const [activeTab, setActiveTab] = useState('comparacion1');
+
+            // Calcular métricas clave
+            const ventasProductos2025 = financialData.real_2025.PL101;
+            const ventasProductos2024 = financialData.real_2024.PL101;
+            const ventasProductosBudget = financialData.budget_2025.PL101;
+            
+            const ventasServicios2025 = financialData.real_2025.PL102;
+            const ventasServicios2024 = financialData.real_2024.PL102;
+            const ventasServiciosBudget = financialData.budget_2025.PL102;
+
+            const costosProductos2025 = Math.abs(financialData.real_2025.PL201 + financialData.real_2025.PL203 + financialData.real_2025.PL204);
+            const costosProductos2024 = Math.abs(financialData.real_2024.PL201 + financialData.real_2024.PL203 + financialData.real_2024.PL204);
+            const costosProductosBudget = Math.abs(financialData.budget_2025.PL201 + financialData.budget_2025.PL203 + financialData.budget_2025.PL204);
+
+            const costosServicios2025 = Math.abs(financialData.real_2025.PL202);
+            const costosServicios2024 = Math.abs(financialData.real_2024.PL202);
+            const costosServiciosBudget = Math.abs(financialData.budget_2025.PL202);
+
+            const margenProductos2025 = ((ventasProductos2025 - costosProductos2025) / ventasProductos2025) * 100;
+            const margenProductos2024 = ((ventasProductos2024 - costosProductos2024) / ventasProductos2024) * 100;
+            const margenProductosBudget = ((ventasProductosBudget - costosProductosBudget) / ventasProductosBudget) * 100;
+
+            const margenServicios2025 = ((ventasServicios2025 - costosServicios2025) / ventasServicios2025) * 100;
+            const margenServicios2024 = ((ventasServicios2024 - costosServicios2024) / ventasServicios2024) * 100;
+            const margenServiciosBudget = ((ventasServiciosBudget - costosServiciosBudget) / ventasServiciosBudget) * 100;
+
+            // Conclusiones Real 2025 vs Budget 2025
+            const conclusionesRealVsBudget = [
+                {
+                    titulo: "Desempeño General por Debajo de Expectativas",
+                    descripcion: `La utilidad neta real de 2025 alcanzó solo ${formatNumber(financialData.totales.utilidad_neta_2025)}, significativamente inferior al budget de ${formatNumber(financialData.totales.utilidad_neta_budget)} (déficit del 97.1%). En cifras Pre-IFRS, la utilidad neta habría sido de ${formatNumber(financialData.pre_ifrs_2025.utilidad_neta)}, aún un 54.7% por debajo del presupuesto. El EBITDA real fue de ${formatNumber(financialData.totales.ebitda_2025)} vs budget de ${formatNumber(financialData.totales.ebitda_budget)} (déficit del 41.9%). En términos Pre-IFRS, el EBITDA habría sido ${formatNumber(financialData.pre_ifrs_2025.ebitda)}, representando un déficit del 12.3% respecto al budget.`,
+                    chart: 'utilidadVsBudget'
+                },
+                {
+                    titulo: "Composición de Costos Directos de Productos: Dominio de Costos ICO",
+                    descripcion: `El análisis de la estructura de costos directos de productos revela que PL203 (Costos ICO) es el componente más fuerte, representando el 54.6% del total (${formatNumber(483795448)} de ${formatNumber(886633605)}). Le siguen PL201 (Costos de Productos) con 33.4% (${formatNumber(296190181)}) y PL204 (Costos Indirectos) con 12.0% (${formatNumber(106647976)}). Comparado con el budget: PL203 tuvo un desempeño favorable (-12.9% bajo presupuesto), pero PL201 se excedió significativamente (+11.7% sobre presupuesto), y PL204 estuvo -20.7% bajo budget. Los Costos ICO mantienen su posición dominante como el principal driver de costos en la producción de productos.`,
+                    chart: 'composicionCostos'
+                },
+                {
+                    titulo: "Desempeño Mixto en Ventas: Caída en Productos, Crecimiento en Servicios",
+                    descripcion: `Las ventas presentaron comportamientos opuestos por línea de negocio. Ventas de Productos: Real 2025 fue ${formatNumber(2322329127)} vs Budget ${formatNumber(2771179861)}, representando un déficit de ${formatNumber(2771179861 - 2322329127)} (16.2% bajo presupuesto). Esto refleja una pérdida significativa de volumen o precio en la línea de productos. Ventas de Servicios: Real 2025 alcanzó ${formatNumber(534529220)} vs Budget ${formatNumber(436926724)}, superando el presupuesto en ${formatNumber(534529220 - 436926724)} (+22.3% sobre budget). El crecimiento en servicios no compensó la caída en productos, resultando en ingresos totales bajo presupuesto. La mezcla de ventas cambió: Productos representaron 81.3% del total (vs 86.4% presupuestado) y Servicios 18.7% (vs 13.6% presupuestado).`,
+                    chart: 'ventasComparativas'
+                },
+                {
+                    titulo: "Presión en Márgenes: Mayor Impacto en Productos que en Servicios",
+                    descripcion: `Los márgenes brutos muestran presión en ambas líneas de negocio, pero con mayor impacto en productos. Margen Bruto Productos: Real 2025 alcanzó 61.8% vs Budget 65.5% (caída de 3.7 puntos porcentuales). Los costos de productos representaron 38.2% de las ventas vs 34.5% presupuestado. Margen Bruto Servicios: Real 2025 fue 74.0% vs Budget 75.4% (caída de 1.5 puntos porcentuales), mostrando mejor control. Los costos de servicios fueron 26.0% de ventas vs 24.6% presupuestado. Aunque los productos mantienen un margen absoluto razonable (61.8%), la desviación de -3.7pp respecto al budget evidencia una erosión significativa de rentabilidad, principalmente por sobrecostos en PL201 (+11.7%) que no fue compensado por el ahorro en PL203 (-12.9%).`,
+                    chart: 'margenesComparativos'
+                }
+            ];
+
+            // Conclusiones Real 2025 vs Real 2024
+            const conclusionesRealVsReal = [
+                {
+                    titulo: "Composición de Costos Directos: PL203 (Costos ICO) como Principal Driver",
+                    descripcion: `Los Costos ICO (PL203) dominan la estructura de costos directos de productos: 2025 representa 54.6% (${formatNumber(483795448)}) vs 2024 con 68.0% (${formatNumber(461533365)}). Sin embargo, el crecimiento más alarmante vino de PL201 (Costos de Productos) que aumentó 36.5% (de ${formatNumber(217017806)} a ${formatNumber(296190181)}), mientras PL203 creció moderadamente 4.8%. Adicionalmente, PL204 (Costos Indirectos) es una nueva cuenta en 2025 con ${formatNumber(106647976)}, inexistente en 2024 debido a cambios en clasificación contable por IFRS. El total de costos directos de productos creció 30.7% (de ${formatNumber(678551171)} a ${formatNumber(886633605)}), muy superior al crecimiento de ventas de productos de solo 1.3%.`,
+                    chart: 'composicionCostosReal'
+                },
+                {
+                    titulo: "Aumento Considerable de Costos de Producción",
+                    descripcion: `Los costos de producción totales aumentaron de ${formatNumber(Math.abs(financialData.totales.production_cost_2024))} en 2024 a ${formatNumber(Math.abs(financialData.totales.production_cost_2025))} en 2025 (incremento del 37.6%). Costos de productos: aumentaron de ${formatNumber(costosProductos2024)} a ${formatNumber(costosProductos2025)} (incremento del 30.9%). Costos de servicios: aumentaron de ${formatNumber(costosServicios2024)} a ${formatNumber(costosServicios2025)} (incremento del 108.2%). Las ventas solo crecieron 5.7% (de ${formatNumber(financialData.totales.production_value_2024)} a ${formatNumber(financialData.totales.production_value_2025)}), mientras los costos crecieron 37.6%, evidenciando una grave pérdida de eficiencia operativa.`,
+                    chart: 'costosVsReal'
+                },
+                {
+                    titulo: "Deterioro de Rentabilidad en Productos y Servicios",
+                    descripcion: `Ambas líneas de negocio experimentaron deterioro en rentabilidad, aunque con diferente intensidad. Margen Bruto Productos: cayó de ${margenProductos2024.toFixed(1)}% en 2024 a ${margenProductos2025.toFixed(1)}% en 2025 (caída de ${(margenProductos2024 - margenProductos2025).toFixed(1)} puntos porcentuales), siendo el deterioro más severo. Margen Bruto Servicios: cayó de ${margenServicios2024.toFixed(1)}% en 2024 a ${margenServicios2025.toFixed(1)}% en 2025 (caída de ${(margenServicios2024 - margenServicios2025).toFixed(1)} puntos porcentuales), con un impacto moderado. Los productos sufrieron mayor deterioro debido al crecimiento desproporcionado de costos (+30.9%) versus ventas (+1.3%). Los servicios, a pesar de crecer 55.3% en ventas, vieron sus costos aumentar 108.2%, erosionando su rentabilidad.`,
+                    chart: 'rentabilidadProductosVsReal'
+                },
+                {
+                    titulo: "Transformación del Mix de Ventas: Crecimiento Acelerado de Servicios",
+                    descripcion: `La composición de ingresos experimentó un cambio significativo entre 2024 y 2025. Las ventas de servicios crecieron explosivamente de ${formatNumber(344254258)} a ${formatNumber(534529220)} (+55.3%), mientras que las ventas de productos se mantuvieron prácticamente estancadas, pasando de ${formatNumber(2293522585)} a ${formatNumber(2322329127)} (+1.3%). Este cambio modificó el mix de ventas: en 2024 los productos representaban 86.9% y servicios 13.1%, mientras que en 2025 los productos bajaron a 81.3% y servicios subieron a 18.7%. Este crecimiento de servicios, que tienen mayor margen (74.0%), representa una oportunidad estratégica para mejorar la rentabilidad global si se continúa potenciando esta línea de negocio.`,
+                    chart: 'mixVentas'
+                }
+            ];
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-8">
+                    <div className="max-w-7xl mx-auto">
+                        {/* Header */}
+                        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-gray-100">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className="text-4xl font-bold text-gray-800 mb-2">Dashboard Financiero</h1>
+                                    <p className="text-gray-600">Giunti Chile AG - Estados de Resultados 2024-2025</p>
+                                </div>
+                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl shadow-md">
+                                    <div className="text-sm font-semibold">Período</div>
+                                    <div className="text-2xl font-bold">2024 - 2025</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Introducción IFRS */}
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-md p-6 mb-8 border border-blue-200">
+                            <div className="flex items-start">
+                                <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h2 className="text-xl font-bold text-gray-800 mb-3">Contexto: Adopción de Normativa IFRS en 2025</h2>
+                                    <p className="text-gray-700 leading-relaxed text-justify mb-4">
+                                        Durante el año 2025, la empresa implementó un cambio significativo en sus procedimientos contables al alinearse 
+                                        con las <strong>Normas Internacionales de Información Financiera (IFRS)</strong>. Este cambio metodológico impactó 
+                                        sustancialmente los resultados financieros reportados. El objetivo principal de estas normas es garantizar la transparencia, la coherencia y la comparabilidad de la información financiera, facilitando la toma de decisiones por parte de inversionistas, reguladores y otras partes interesadas.
+                                    </p>
+                                    
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                                        <div className="bg-white rounded-lg p-4 border border-blue-200">
+                                            <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                                                <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs mr-2">1</span>
+                                                Cambios Contables IFRS (Total: $236 MM)
+                                            </h3>
+                                            <div className="space-y-2 text-sm text-gray-700 text-justify">
+                                                <div className="flex justify-between items-start">
+                                                    <span className="flex-1">• Castigo de existencia (PL4012):</span>
+                                                    <span className="font-semibold ml-2">$147 MM</span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 ml-2 mb-2">Deterioro de inventarios por IFRS, única vez</p>
+                                                
+                                                <div className="flex justify-between items-start">
+                                                    <span className="flex-1">• Provisión impuesto a la renta (PL6001):</span>
+                                                    <span className="font-semibold ml-2">$54 MM</span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 ml-2 mb-2">Primera vez por IFRS, cambio contable</p>
+                                                
+                                                <div className="flex justify-between items-start">
+                                                    <span className="flex-1">• Provisión de vacaciones (PL3012):</span>
+                                                    <span className="font-semibold ml-2">$35 MM</span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 ml-2 mb-2">Primera vez por IFRS, cambio contable</p>
+                                                
+                                                <div className="border-t border-gray-200 pt-2 mt-2">
+                                                    <div className="flex justify-between items-center font-bold text-blue-700">
+                                                        <span>Total Ajustes IFRS:</span>
+                                                        <span>$236 MM</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-lg p-4 border border-orange-200">
+                                            <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                                                <span className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs mr-2">2</span>
+                                                Despidos Extraordinarios (Total: $125 MM)
+                                            </h3>
+                                            <div className="space-y-2 text-sm text-gray-700 text-justify">
+                                                <div className="flex justify-between items-start">
+                                                    <span className="flex-1">• Indemnización 2 ejecutivos (PL5032):</span>
+                                                    <span className="font-semibold ml-2">$91 MM</span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 ml-2 mb-2">Monto excepcional por años de servicio</p>
+                                                
+                                                <div className="flex justify-between items-start">
+                                                    <span className="flex-1">• Otros despidos:</span>
+                                                    <span className="font-semibold ml-2">$34 MM</span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 ml-2 mb-2">Dentro del rango normal anual: $30-60 MM</p>
+                                                
+                                                <div className="border-t border-gray-200 pt-2 mt-2">
+                                                    <div className="flex justify-between items-center font-bold text-orange-700">
+                                                        <span>Total Despidos 2025:</span>
+                                                        <span>$125 MM</span>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs text-gray-500 italic mt-2">Nota: Los despidos son operatoria normal. Lo excepcional es el monto de $91 MM de 2 ejecutivos.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    
+                                    <p className="text-gray-600 text-sm mt-3 italic">
+                                        Nota: Los ajustes IFRS y Pre-IFRS se aplican únicamente a los montos reales, no a los presupuestados.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* KPIs Principales */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-sm font-semibold text-gray-600">EBITDA 2025</h3>
+                                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="text-2xl font-bold text-gray-800">{formatNumber(financialData.totales.ebitda_2025)}</div>
+                                <div className="text-xs text-gray-500 mt-1">Pre-IFRS: {formatNumber(financialData.pre_ifrs_2025.ebitda)}</div>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-sm font-semibold text-gray-600">EBIT 2025</h3>
+                                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="text-2xl font-bold text-gray-800">{formatNumber(financialData.totales.ebit_2025)}</div>
+                                <div className="text-xs text-gray-500 mt-1">Pre-IFRS: {formatNumber(financialData.pre_ifrs_2025.ebit)}</div>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-sm font-semibold text-gray-600">Utilidad Neta 2025</h3>
+                                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="text-2xl font-bold text-gray-800">{formatNumber(financialData.totales.utilidad_neta_2025)}</div>
+                                <div className="text-xs text-gray-500 mt-1">Pre-IFRS: {formatNumber(financialData.pre_ifrs_2025.utilidad_neta)}</div>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-sm font-semibold text-gray-600">Ajuste IFRS</h3>
+                                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="text-2xl font-bold text-gray-800">{formatNumber(financialData.ajustes.ifrs)}</div>
+                                <div className="text-xs text-gray-500 mt-1">Mayor gasto contable 2025</div>
+                            </div>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="bg-white rounded-xl shadow-md mb-8 border border-gray-100">
+                            <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-3 border-b border-amber-100 rounded-t-xl">
+                                <p className="text-center text-lg text-gray-700 font-medium flex items-center justify-center">
+                                    <svg className="w-6 h-6 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Haz clic en cada pestaña para ver los análisis comparativos detallados
+                                </p>
+                            </div>
+                            <div className="flex border-b border-gray-200">
+                                <button
+                                    onClick={() => setActiveTab('comparacion1')}
+                                    className={`flex-1 py-4 px-6 font-semibold transition-all ${
+                                        activeTab === 'comparacion1'
+                                            ? 'bg-blue-600 text-white border-b-4 border-blue-800 shadow-md'
+                                            : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    Real 2025 vs Budget 2025
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('comparacion2')}
+                                    className={`flex-1 py-4 px-6 font-semibold transition-all ${
+                                        activeTab === 'comparacion2'
+                                            ? 'bg-cyan-400 text-white border-b-4 border-cyan-600 shadow-md'
+                                            : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    Real 2025 vs Real 2024
+                                </button>
+                            </div>
+
+                            <div className="p-6">
+                                {activeTab === 'comparacion1' && (
+                                    <div className="space-y-6 bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-xl">
+                                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Análisis Comparativo: Real 2025 vs Budget 2025</h2>
+                                        
+                                        {/* Tabla Resumen Categorías Grupales */}
+                                        <div className="bg-white rounded-xl shadow-md p-3 border border-gray-200">
+                                            <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center">
+                                                <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                Resumen por Categorías
+                                            </h3>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-[11px]">
+                                                    <thead>
+                                                        <tr className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
+                                                            <th className="text-left p-2 font-semibold text-gray-700 text-[11px]">Categoría</th>
+                                                            <th className="text-right p-2 font-semibold text-gray-700 text-[11px]">Real 2025</th>
+                                                            <th className="text-right p-2 font-semibold text-gray-700 text-[11px]">Budget 2025</th>
+                                                            <th className="text-right p-2 font-semibold text-gray-700 text-[11px]">Var %</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">Production Value</td>
+                                                            <td className="text-right p-2 text-green-700">{formatNumber(financialData.totales.production_value_2025)}</td>
+                                                            <td className="text-right p-2 text-green-700">{formatNumber(financialData.totales.production_value_budget)}</td>
+                                                            <td className="text-right p-2 font-semibold text-red-600">{(((financialData.totales.production_value_2025 - financialData.totales.production_value_budget) / financialData.totales.production_value_budget) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">Production Cost</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.production_cost_2025)}</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.production_cost_budget)}</td>
+                                                            <td className="text-right p-2 font-semibold text-green-600">{(((financialData.totales.production_cost_2025 - financialData.totales.production_cost_budget) / Math.abs(financialData.totales.production_cost_budget)) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">SG&A</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.sga_2025)}</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.sga_budget)}</td>
+                                                            <td className="text-right p-2 font-semibold text-green-600">{(((financialData.totales.sga_2025 - financialData.totales.sga_budget) / Math.abs(financialData.totales.sga_budget)) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">D&A</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.da_2025)}</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.da_budget)}</td>
+                                                            <td className="text-right p-2 font-semibold text-red-600">{(((financialData.totales.da_2025 - financialData.totales.da_budget) / Math.abs(financialData.totales.da_budget)) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">Financial Results</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.financial_2025)}</td>
+                                                            <td className="text-right p-2 text-gray-600">{formatNumber(financialData.totales.financial_budget)}</td>
+                                                            <td className="text-right p-2 font-semibold text-red-600">N/A</td>
+                                                        </tr>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">Income Tax</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.tax_2025)}</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.tax_budget)}</td>
+                                                            <td className="text-right p-2 font-semibold text-green-600">{(((financialData.totales.tax_2025 - financialData.totales.tax_budget) / Math.abs(financialData.totales.tax_budget)) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="bg-blue-50 border-t-2 border-blue-200">
+                                                            <td className="p-2 font-bold text-gray-800">EBITDA</td>
+                                                            <td className="text-right p-2 font-bold text-blue-700">{formatNumber(financialData.totales.ebitda_2025)}</td>
+                                                            <td className="text-right p-2 font-bold text-blue-700">{formatNumber(financialData.totales.ebitda_budget)}</td>
+                                                            <td className="text-right p-2 font-bold text-red-600">{(((financialData.totales.ebitda_2025 - financialData.totales.ebitda_budget) / financialData.totales.ebitda_budget) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="bg-purple-50">
+                                                            <td className="p-2 font-bold text-gray-800">EBIT</td>
+                                                            <td className="text-right p-2 font-bold text-purple-700">{formatNumber(financialData.totales.ebit_2025)}</td>
+                                                            <td className="text-right p-2 font-bold text-purple-700">{formatNumber(financialData.totales.ebit_budget)}</td>
+                                                            <td className="text-right p-2 font-bold text-red-600">{(((financialData.totales.ebit_2025 - financialData.totales.ebit_budget) / financialData.totales.ebit_budget) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="bg-green-50 border-t-2 border-green-200">
+                                                            <td className="p-2 font-bold text-gray-800">Utilidad Neta</td>
+                                                            <td className="text-right p-2 font-bold text-green-700">{formatNumber(financialData.totales.utilidad_neta_2025)}</td>
+                                                            <td className="text-right p-2 font-bold text-green-700">{formatNumber(financialData.totales.utilidad_neta_budget)}</td>
+                                                            <td className="text-right p-2 font-bold text-red-600">{(((financialData.totales.utilidad_neta_2025 - financialData.totales.utilidad_neta_budget) / financialData.totales.utilidad_neta_budget) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Renderizar conclusiones en grid de 2 columnas */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                            {conclusionesRealVsBudget.map((conclusion, index) => (
+                                                <div key={index} className={`bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 shadow-md border border-gray-200 ${conclusion.fullWidth ? 'col-span-1 lg:col-span-2' : ''}`}>
+                                                    <div className="flex items-start mb-3">
+                                                        <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg flex items-center justify-center font-bold mr-3 flex-shrink-0 text-sm shadow-lg">
+                                                            {index + 1}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <h3 className="text-base font-bold text-gray-800 mb-2">{conclusion.titulo}</h3>
+                                                            <p className="text-xs text-gray-700 leading-relaxed text-justify mb-4">{conclusion.descripcion}</p>
+                                                        </div>
+                                                    </div>
+                                                
+                                                
+                                                {conclusion.chart === 'utilidadVsBudget' && (
+                                                    <div className="bg-white p-3 rounded-lg shadow">
+                                                        <h4 className="text-sm font-semibold text-gray-600 mb-3 text-center">Utilidad Neta: Comparación 2025</h4>
+                                                        <div className="h-52">
+                                                            <ChartComponent
+                                                                type="bar"
+                                                                id="utilidadNetaComparativoChart"
+                                                                data={{
+                                                                    labels: ['Real 2025 IFRS', 'Budget 2025', 'Real 2025 Pre-IFRS'],
+                                                                    datasets: [{
+                                                                        label: 'Utilidad Neta',
+                                                                        data: [
+                                                                            financialData.totales.utilidad_neta_2025,
+                                                                            financialData.totales.utilidad_neta_budget,
+                                                                            financialData.pre_ifrs_2025.utilidad_neta
+                                                                        ],
+                                                                        backgroundColor: [
+                                                                            'rgba(239, 68, 68, 0.7)',
+                                                                            'rgba(34, 197, 94, 0.7)',
+                                                                            'rgba(59, 130, 246, 0.7)'
+                                                                        ],
+                                                                        borderColor: [
+                                                                            'rgba(239, 68, 68, 1)',
+                                                                            'rgba(34, 197, 94, 1)',
+                                                                            'rgba(59, 130, 246, 1)'
+                                                                        ],
+                                                                        borderWidth: 2
+                                                                    }]
+                                                                }}
+                                                                options={{
+                                                                    indexAxis: 'y',
+                                                                    maintainAspectRatio: false,
+                                                                    plugins: {
+                                                                        legend: { display: false },
+                                                                        tooltip: {
+                                                                            callbacks: {
+                                                                                label: (context) => `${formatNumber(context.raw)}`
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    scales: {
+                                                                        x: {
+                                                                            ticks: {
+                                                                                callback: (value) => formatNumber(value)
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {conclusion.chart === 'composicionCostos' && (
+                                                    <div className="bg-white p-3 rounded-lg shadow">
+                                                        <h4 className="text-sm font-semibold text-gray-600 mb-3 text-center">Composición de Costos Directos de Productos</h4>
+                                                        <div className="h-52">
+                                                            <ChartComponent
+                                                                type="bar"
+                                                                id="composicionCostosBarChart"
+                                                                data={{
+                                                                    labels: ['PL201 - Costos Productos', 'PL203 - Costos ICO', 'PL204 - Costos Indirectos'],
+                                                                    datasets: [
+                                                                        {
+                                                                            label: 'Real 2025',
+                                                                            data: [296190181, 483795448, 106647976],
+                                                                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                                                                            borderColor: 'rgba(239, 68, 68, 1)',
+                                                                            borderWidth: 2
+                                                                        },
+                                                                        {
+                                                                            label: 'Budget 2025',
+                                                                            data: [265098636.57, 555391917.54, 134412408.61],
+                                                                            backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                                                                            borderColor: 'rgba(34, 197, 94, 1)',
+                                                                            borderWidth: 2
+                                                                        }
+                                                                    ]
+                                                                }}
+                                                                options={{
+                                                                    maintainAspectRatio: false,
+                                                                    plugins: {
+                                                                        legend: { position: 'bottom' },
+                                                                        tooltip: {
+                                                                            callbacks: {
+                                                                                label: (context) => {
+                                                                                    const percentage = context.datasetIndex === 0 
+                                                                                        ? ((context.raw / 886633605) * 100).toFixed(1)
+                                                                                        : ((context.raw / 954902963) * 100).toFixed(1);
+                                                                                    return `${context.dataset.label}: ${formatNumber(context.raw)} (${percentage}%)`;
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    scales: {
+                                                                        y: {
+                                                                            ticks: {
+                                                                                callback: (value) => formatNumber(value)
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {conclusion.chart === 'margenesComparativos' && (
+                                                    <div className="bg-white p-3 rounded-lg shadow">
+                                                        <h4 className="text-sm font-semibold text-gray-600 mb-3 text-center">Margen Bruto (%): Productos y Servicios - Real vs Budget 2025</h4>
+                                                        <div className="h-52">
+                                                            <ChartComponent
+                                                                type="bar"
+                                                                id="margenesComparativosChart"
+                                                                data={{
+                                                                    labels: ['Productos', 'Servicios'],
+                                                                    datasets: [
+                                                                        {
+                                                                            label: 'Real 2025',
+                                                                            data: [61.8, 74.0],
+                                                                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                                                                            borderColor: 'rgba(239, 68, 68, 1)',
+                                                                            borderWidth: 2
+                                                                        },
+                                                                        {
+                                                                            label: 'Budget 2025',
+                                                                            data: [65.5, 75.4],
+                                                                            backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                                                                            borderColor: 'rgba(34, 197, 94, 1)',
+                                                                            borderWidth: 2
+                                                                        }
+                                                                    ]
+                                                                }}
+                                                                options={{
+                                                                    maintainAspectRatio: false,
+                                                                    plugins: {
+                                                                        legend: { 
+                                                                            position: 'bottom',
+                                                                            labels: {
+                                                                                padding: 15,
+                                                                                font: { size: 12 }
+                                                                            }
+                                                                        },
+                                                                        tooltip: {
+                                                                            callbacks: {
+                                                                                label: (context) => `${context.dataset.label}: ${context.raw.toFixed(1)}%`
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    scales: {
+                                                                        y: {
+                                                                            min: 0,
+                                                                            max: 100,
+                                                                            ticks: {
+                                                                                callback: (value) => `${value}%`,
+                                                                                stepSize: 10
+                                                                            },
+                                                                            grid: {
+                                                                                color: 'rgba(0, 0, 0, 0.05)'
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {conclusion.chart === 'ventasComparativas' && (
+                                                    <div className="bg-white p-3 rounded-lg shadow">
+                                                        <h4 className="text-sm font-semibold text-gray-600 mb-3 text-center">Ventas: Productos y Servicios - Real vs Budget 2025</h4>
+                                                        <div className="h-52">
+                                                            <ChartComponent
+                                                                type="bar"
+                                                                id="ventasComparativasChart"
+                                                                data={{
+                                                                    labels: ['Productos', 'Servicios'],
+                                                                    datasets: [
+                                                                        {
+                                                                            label: 'Real 2025',
+                                                                            data: [2322329127, 534529220],
+                                                                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                                                            borderColor: 'rgba(59, 130, 246, 1)',
+                                                                            borderWidth: 2
+                                                                        },
+                                                                        {
+                                                                            label: 'Budget 2025',
+                                                                            data: [2771179861, 436926724],
+                                                                            backgroundColor: 'rgba(168, 85, 247, 0.7)',
+                                                                            borderColor: 'rgba(168, 85, 247, 1)',
+                                                                            borderWidth: 2
+                                                                        }
+                                                                    ]
+                                                                }}
+                                                                options={{
+                                                                    maintainAspectRatio: false,
+                                                                    plugins: {
+                                                                        legend: { 
+                                                                            position: 'bottom',
+                                                                            labels: {
+                                                                                padding: 15,
+                                                                                font: { size: 12 }
+                                                                            }
+                                                                        },
+                                                                        tooltip: {
+                                                                            callbacks: {
+                                                                                label: (context) => `${context.dataset.label}: ${formatNumber(context.raw)}`
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    scales: {
+                                                                        y: {
+                                                                            ticks: {
+                                                                                callback: (value) => formatNumber(value)
+                                                                            },
+                                                                            grid: {
+                                                                                color: 'rgba(0, 0, 0, 0.05)'
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                            </div>
+                                        ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'comparacion2' && (
+                                    <div className="space-y-6 bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-xl">
+                                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Análisis Comparativo: Real 2025 vs Real 2024</h2>
+                                        
+                                        {/* Tabla Resumen Categorías Grupales */}
+                                        <div className="bg-white rounded-xl shadow-md p-3 border border-gray-200">
+                                            <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center">
+                                                <svg className="w-5 h-5 mr-2 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                Resumen por Categorías
+                                            </h3>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-[11px]">
+                                                    <thead>
+                                                        <tr className="bg-gradient-to-r from-cyan-50 to-cyan-100 border-b border-cyan-200">
+                                                            <th className="text-left p-2 font-semibold text-gray-700 text-[11px]">Categoría</th>
+                                                            <th className="text-right p-2 font-semibold text-gray-700 text-[11px]">Real 2025</th>
+                                                            <th className="text-right p-2 font-semibold text-gray-700 text-[11px]">Real 2024</th>
+                                                            <th className="text-right p-2 font-semibold text-gray-700 text-[11px]">Var %</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">Production Value</td>
+                                                            <td className="text-right p-2 text-green-700">{formatNumber(financialData.totales.production_value_2025)}</td>
+                                                            <td className="text-right p-2 text-green-700">{formatNumber(financialData.totales.production_value_2024)}</td>
+                                                            <td className="text-right p-2 font-semibold text-green-600">{(((financialData.totales.production_value_2025 - financialData.totales.production_value_2024) / financialData.totales.production_value_2024) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">Production Cost</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.production_cost_2025)}</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.production_cost_2024)}</td>
+                                                            <td className="text-right p-2 font-semibold text-red-600">{(((financialData.totales.production_cost_2025 - financialData.totales.production_cost_2024) / Math.abs(financialData.totales.production_cost_2024)) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">SG&A</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.sga_2025)}</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.sga_2024)}</td>
+                                                            <td className="text-right p-2 font-semibold text-red-600">{(((financialData.totales.sga_2025 - financialData.totales.sga_2024) / Math.abs(financialData.totales.sga_2024)) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">D&A</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.da_2025)}</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.da_2024)}</td>
+                                                            <td className="text-right p-2 font-semibold text-red-600">{(((financialData.totales.da_2025 - financialData.totales.da_2024) / Math.abs(financialData.totales.da_2024)) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">Financial Results</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.financial_2025)}</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.financial_2024)}</td>
+                                                            <td className="text-right p-2 font-semibold text-red-600">{(((financialData.totales.financial_2025 - financialData.totales.financial_2024) / Math.abs(financialData.totales.financial_2024)) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                                            <td className="p-2 font-medium text-gray-700">Income Tax</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.tax_2025)}</td>
+                                                            <td className="text-right p-2 text-red-700">{formatNumber(financialData.totales.tax_2024)}</td>
+                                                            <td className="text-right p-2 font-semibold text-green-600">{(((financialData.totales.tax_2025 - financialData.totales.tax_2024) / Math.abs(financialData.totales.tax_2024)) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="bg-blue-50 border-t-2 border-blue-200">
+                                                            <td className="p-2 font-bold text-gray-800">EBITDA</td>
+                                                            <td className="text-right p-2 font-bold text-blue-700">{formatNumber(financialData.totales.ebitda_2025)}</td>
+                                                            <td className="text-right p-2 font-bold text-blue-700">{formatNumber(financialData.totales.ebitda_2024)}</td>
+                                                            <td className="text-right p-2 font-bold text-red-600">{(((financialData.totales.ebitda_2025 - financialData.totales.ebitda_2024) / financialData.totales.ebitda_2024) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="bg-purple-50">
+                                                            <td className="p-2 font-bold text-gray-800">EBIT</td>
+                                                            <td className="text-right p-2 font-bold text-purple-700">{formatNumber(financialData.totales.ebit_2025)}</td>
+                                                            <td className="text-right p-2 font-bold text-purple-700">{formatNumber(financialData.totales.ebit_2024)}</td>
+                                                            <td className="text-right p-2 font-bold text-red-600">{(((financialData.totales.ebit_2025 - financialData.totales.ebit_2024) / financialData.totales.ebit_2024) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                        <tr className="bg-green-50 border-t-2 border-green-200">
+                                                            <td className="p-2 font-bold text-gray-800">Utilidad Neta</td>
+                                                            <td className="text-right p-2 font-bold text-green-700">{formatNumber(financialData.totales.utilidad_neta_2025)}</td>
+                                                            <td className="text-right p-2 font-bold text-green-700">{formatNumber(financialData.totales.utilidad_neta_2024)}</td>
+                                                            <td className="text-right p-2 font-bold text-red-600">{(((financialData.totales.utilidad_neta_2025 - financialData.totales.utilidad_neta_2024) / financialData.totales.utilidad_neta_2024) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Grid de Conclusiones */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {conclusionesRealVsReal.map((conclusion, index) => (
+                                            <div key={index} className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 shadow-md border border-gray-200">
+                                                <div className="flex items-start mb-3">
+                                                    <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg flex items-center justify-center font-bold mr-3 flex-shrink-0 text-sm shadow-lg">
+                                                        {index + 1}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h3 className="text-base font-bold text-gray-800 mb-2">{conclusion.titulo}</h3>
+                                                        <p className="text-xs text-gray-700 leading-relaxed text-justify mb-4">{conclusion.descripcion}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                
+                                                {conclusion.chart === 'composicionCostosReal' && (
+                                                    <div className="bg-white p-3 rounded-lg shadow">
+                                                        <h4 className="text-sm font-semibold text-gray-600 mb-3 text-center">Costos Directos de Productos: 2024 vs 2025</h4>
+                                                        <div className="h-52">
+                                                            <ChartComponent
+                                                                type="bar"
+                                                                id="composicionCostosRealChart"
+                                                                data={{
+                                                                    labels: ['PL201 - Productos', 'PL203 - ICO', 'PL204 - Indirectos', 'Total Costos'],
+                                                                    datasets: [
+                                                                        {
+                                                                            label: '2024',
+                                                                            data: [217017806, 461533365, 0, 678551171],
+                                                                            backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                                                                            borderColor: 'rgba(34, 197, 94, 1)',
+                                                                            borderWidth: 2
+                                                                        },
+                                                                        {
+                                                                            label: '2025',
+                                                                            data: [296190181, 483795448, 106647976, 886633605],
+                                                                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                                                                            borderColor: 'rgba(239, 68, 68, 1)',
+                                                                            borderWidth: 2
+                                                                        }
+                                                                    ]
+                                                                }}
+                                                                options={{
+                                                                    maintainAspectRatio: false,
+                                                                    plugins: {
+                                                                        legend: { position: 'bottom' },
+                                                                        tooltip: {
+                                                                            callbacks: {
+                                                                                label: (context) => {
+                                                                                    const variaciones = ['+36.5%', '+4.8%', 'Nueva', '+30.7%'];
+                                                                                    return `${context.dataset.label}: ${formatNumber(context.raw)} (${variaciones[context.dataIndex]})`;
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    scales: {
+                                                                        y: {
+                                                                            ticks: {
+                                                                                callback: (value) => formatNumber(value)
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                                                                {conclusion.chart === 'costosVsReal' && (
+                                                    <div className="bg-white p-3 rounded-lg shadow">
+                                                        <h4 className="text-sm font-semibold text-gray-600 mb-3 text-center">Aumento de Costos de Producción: 2024 vs 2025</h4>
+                                                        <div className="h-52">
+                                                            <ChartComponent
+                                                                type="bar"
+                                                                id="costosVsRealChart"
+                                                                data={{
+                                                                    labels: ['Costos\nProductos', 'Costos\nServicios', 'Total\nCostos'],
+                                                                    datasets: [
+                                                                        {
+                                                                            label: '2024',
+                                                                            data: [
+                                                                                costosProductos2024,
+                                                                                costosServicios2024,
+                                                                                Math.abs(financialData.totales.production_cost_2024)
+                                                                            ],
+                                                                            backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                                                                            borderColor: 'rgba(34, 197, 94, 1)',
+                                                                            borderWidth: 2
+                                                                        },
+                                                                        {
+                                                                            label: '2025',
+                                                                            data: [
+                                                                                costosProductos2025,
+                                                                                costosServicios2025,
+                                                                                Math.abs(financialData.totales.production_cost_2025)
+                                                                            ],
+                                                                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                                                                            borderColor: 'rgba(239, 68, 68, 1)',
+                                                                            borderWidth: 2
+                                                                        }
+                                                                    ]
+                                                                }}
+                                                                options={{
+                                                                    maintainAspectRatio: false,
+                                                                    plugins: {
+                                                                        legend: { position: 'bottom' },
+                                                                        tooltip: {
+                                                                            callbacks: {
+                                                                                label: (context) => {
+                                                                                    const variaciones = ['+30.9%', '+108.2%', '+37.6%'];
+                                                                                    return `${context.dataset.label}: ${formatNumber(context.raw)} (${variaciones[context.dataIndex]})`;
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    scales: {
+                                                                        y: {
+                                                                            ticks: {
+                                                                                callback: (value) => formatNumber(value)
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                                                                {conclusion.chart === 'rentabilidadProductosVsReal' && (
+                                                    <div className="bg-white p-3 rounded-lg shadow">
+                                                        <h4 className="text-sm font-semibold text-gray-600 mb-3 text-center">Deterioro del Margen Bruto: Productos vs Servicios (2024 vs 2025)</h4>
+                                                        <div className="h-52">
+                                                            <ChartComponent
+                                                                type="bar"
+                                                                id="margenProductosVsRealChart"
+                                                                data={{
+                                                                    labels: ['Productos 2024', 'Productos 2025', 'Servicios 2024', 'Servicios 2025'],
+                                                                    datasets: [{
+                                                                        label: 'Margen Bruto (%)',
+                                                                        data: [
+                                                                            margenProductos2024,
+                                                                            margenProductos2025,
+                                                                            margenServicios2024,
+                                                                            margenServicios2025
+                                                                        ],
+                                                                        backgroundColor: [
+                                                                            'rgba(34, 197, 94, 0.7)',
+                                                                            'rgba(239, 68, 68, 0.7)',
+                                                                            'rgba(59, 130, 246, 0.7)',
+                                                                            'rgba(239, 68, 68, 0.7)'
+                                                                        ],
+                                                                        borderColor: [
+                                                                            'rgba(34, 197, 94, 1)',
+                                                                            'rgba(239, 68, 68, 1)',
+                                                                            'rgba(59, 130, 246, 1)',
+                                                                            'rgba(239, 68, 68, 1)'
+                                                                        ],
+                                                                        borderWidth: 2
+                                                                    }]
+                                                                }}
+                                                                options={{
+                                                                    indexAxis: 'y',
+                                                                    maintainAspectRatio: false,
+                                                                    plugins: {
+                                                                        legend: { display: false },
+                                                                        tooltip: {
+                                                                            callbacks: {
+                                                                                label: (context) => {
+                                                                                    const labels = ['Productos 2024', 'Productos 2025', 'Servicios 2024', 'Servicios 2025'];
+                                                                                    const variaciones = ['', '-' + (margenProductos2024 - margenProductos2025).toFixed(1) + 'pp', '', '-' + (margenServicios2024 - margenServicios2025).toFixed(1) + 'pp'];
+                                                                                    return `${labels[context.dataIndex]}: ${context.raw.toFixed(1)}% ${variaciones[context.dataIndex]}`;
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    scales: {
+                                                                        x: {
+                                                                            min: 0,
+                                                                            max: 100,
+                                                                            ticks: {
+                                                                                callback: (value) => `${value}%`
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                                                                {conclusion.chart === 'mixVentas' && (
+                                                    <div className="bg-white p-3 rounded-lg shadow">
+                                                        <h4 className="text-sm font-semibold text-gray-600 mb-3 text-center">Evolución del Mix de Ventas: 2024 vs 2025</h4>
+                                                        <div className="h-52">
+                                                            <ChartComponent
+                                                                type="bar"
+                                                                id="mixVentasChart"
+                                                                data={{
+                                                                    labels: ['2024', '2025'],
+                                                                    datasets: [
+                                                                        {
+                                                                            label: 'Productos',
+                                                                            data: [2293522585, 2322329127],
+                                                                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                                                            borderColor: 'rgba(59, 130, 246, 1)',
+                                                                            borderWidth: 2
+                                                                        },
+                                                                        {
+                                                                            label: 'Servicios',
+                                                                            data: [344254258, 534529220],
+                                                                            backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                                                                            borderColor: 'rgba(34, 197, 94, 1)',
+                                                                            borderWidth: 2
+                                                                        }
+                                                                    ]
+                                                                }}
+                                                                options={{
+                                                                    maintainAspectRatio: false,
+                                                                    plugins: {
+                                                                        legend: { position: 'bottom' },
+                                                                        tooltip: {
+                                                                            callbacks: {
+                                                                                label: (context) => {
+                                                                                    const total = context.datasetIndex === 0 
+                                                                                        ? (context.dataIndex === 0 ? 2637776843 : 2856858347)
+                                                                                        : (context.dataIndex === 0 ? 2637776843 : 2856858347);
+                                                                                    const percentage = ((context.raw / total) * 100).toFixed(1);
+                                                                                    return `${context.dataset.label}: ${formatNumber(context.raw)} (${percentage}%)`;
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    scales: {
+                                                                        y: {
+                                                                            stacked: true,
+                                                                            ticks: {
+                                                                                callback: (value) => formatNumber(value)
+                                                                            }
+                                                                        },
+                                                                        x: {
+                                                                            stacked: true
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {conclusion.chart === 'eficienciaOperativa' && (
+                                                    <div className="bg-white p-3 rounded-lg shadow">
+                                                        <h4 className="text-sm font-semibold text-gray-600 mb-3 text-center">Margen EBITDA: Deterioro de Eficiencia 2024 vs 2025</h4>
+                                                        <div className="h-52">
+                                                            <ChartComponent
+                                                                type="line"
+                                                                id="margenEBITDAChart"
+                                                                data={{
+                                                                    labels: ['2024', '2025'],
+                                                                    datasets: [
+                                                                        {
+                                                                            label: 'Margen EBITDA (%)',
+                                                                            data: [22.6, 16.1],
+                                                                            borderColor: 'rgba(239, 68, 68, 1)',
+                                                                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                                                            borderWidth: 3,
+                                                                            pointRadius: 8,
+                                                                            pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                                                                            tension: 0.1
+                                                                        }
+                                                                    ]
+                                                                }}
+                                                                options={{
+                                                                    maintainAspectRatio: false,
+                                                                    plugins: {
+                                                                        legend: { position: 'bottom' },
+                                                                        tooltip: {
+                                                                            callbacks: {
+                                                                                label: (context) => `Margen: ${context.raw.toFixed(1)}%`
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    scales: {
+                                                                        y: {
+                                                                            min: 0,
+                                                                            max: 30,
+                                                                            ticks: {
+                                                                                callback: (value) => `${value}%`
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // App Principal
+        const App = () => {
+            const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+            return (
+                <>
+                    {!isAuthenticated ? (
+                        <Login onLogin={() => setIsAuthenticated(true)} />
+                    ) : (
+                        <Dashboard />
+                    )}
+                </>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
